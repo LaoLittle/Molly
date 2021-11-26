@@ -92,7 +92,8 @@ object EventListener : Service() {
             }
 
             GlobalEventChannel.subscribeFriendMessages {
-                startsWith("聊天") {
+                finding(Regex("聊天")) {
+                    subject.sendMessage("在呢")
                     whileSelectMessages {
                         var times = 0
                         default {
