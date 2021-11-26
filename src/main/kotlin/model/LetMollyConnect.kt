@@ -6,7 +6,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.put
-import net.mamoe.mirai.utils.info
+import net.mamoe.mirai.utils.error
 import org.laolittle.plugin.molly.Molly
 import org.laolittle.plugin.molly.MollyConfig.api_key
 import org.laolittle.plugin.molly.MollyConfig.api_secret
@@ -81,42 +81,60 @@ private fun request(
 }
 
 @ExperimentalSerializationApi
+private fun hasError(mollyError: MollyError) {
+    Molly.logger.error {
+        """
+            回复发生错误! 
+            错误代码: ${mollyError.code}
+            错误信息: ${mollyError.message}
+        """.trimIndent()
+    }
+}
+
+@ExperimentalSerializationApi
 fun request(message: String, userId: Long, userName: String, groupName: String, groupId: Long) {
-    val mollyData: MollyData = Json.decodeFromString(
-        request(
-            message,
-            userId,
-            userName,
-            groupName,
-            groupId,
-            true
-        )
+    val mollyJsonString = request(
+        message,
+        userId,
+        userName,
+        groupName,
+        groupId,
+        true
     )
-    decode(mollyData.data)
+    try{
+        val mollyData: MollyData = Json.decodeFromString(mollyJsonString)
+        decode(mollyData.data)
+    } catch (e: Exception){
+        val mollyError: MollyError = Json.decodeFromString(mollyJsonString)
+        hasError(mollyError)
+    }
+
 }
 
 @ExperimentalSerializationApi
 fun request(message: String, userId: Long, userName: String) {
-    val mollyData: MollyData = Json.decodeFromString(
-        request(
-            message,
-            userId,
-            userName,
-            null,
-            null,
-            false
-        )
+    val mollyJsonString = request(
+        message,
+        userId,
+        userName,
+        null,
+        null,
+        false
     )
-    decode(mollyData.data)
+    try {
+        val mollyData: MollyData = Json.decodeFromString(mollyJsonString)
+        decode(mollyData.data)
+    } catch (e: Exception) {
+        val mollyError: MollyError = Json.decodeFromString(mollyJsonString)
+        hasError(mollyError)
+    }
 }
 
 @ExperimentalSerializationApi
-private fun decode(msgData: JsonArray?) {
-    if (msgData != null) {
-        for ((i, json) in msgData.withIndex()) {
-            mollyReply = mollyReply.plus(i to Json.decodeFromJsonElement(json))
-        }
-    } else Molly.logger.info { "发送失败，消息为空" }
+private fun decode(msgData: JsonArray) {
+    for ((i, json) in msgData.withIndex()) {
+        mollyReply = mollyReply.plus(i to Json.decodeFromJsonElement(json))
+    }
 }
 
 fun mollyFile(url: String): InputStream {
