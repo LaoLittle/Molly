@@ -8,11 +8,11 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.put
 import net.mamoe.mirai.utils.info
 import org.laolittle.plugin.molly.Molly
+import org.laolittle.plugin.molly.MollyConfig.api_key
+import org.laolittle.plugin.molly.MollyConfig.api_secret
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
-import org.laolittle.plugin.molly.MollyConfig.api_key
-import org.laolittle.plugin.molly.MollyConfig.api_secret
 
 var mollyReply: Map<Int, MollyReply> = linkedMapOf()
 var inActMember = mutableListOf<Long>()
@@ -95,8 +95,19 @@ fun request(message: String, userId: Long, userName: String, groupName: String, 
     decode(mollyData.data)
 }
 
+@ExperimentalSerializationApi
 fun request(message: String, userId: Long, userName: String) {
-    request(message, userId, userName, null, null, false)
+    val mollyData: MollyData = Json.decodeFromString(
+        request(
+            message,
+            userId,
+            userName,
+            null,
+            null,
+            false
+        )
+    )
+    decode(mollyData.data)
 }
 
 @ExperimentalSerializationApi
