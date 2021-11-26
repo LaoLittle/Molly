@@ -42,13 +42,14 @@ object EventListener : Service() {
                                     groupName = group.name,
                                     groupId = group.id
                                 )
-                                for (i in mollyReply.keys)
-                                    if (mollyReply[i]?.typed == 1) {
+                                val mollyReplyTempo = mollyReply
+                                for (i in mollyReplyTempo.keys)
+                                    if (mollyReplyTempo[i]?.typed == 1) {
                                         val random = (100..3000).random().toLong()
                                         delay(random)
-                                        subject.sendMessage(mollyReply[i]?.content.toString())
+                                        subject.sendMessage(mollyReplyTempo[i]?.content.toString())
                                     } else {
-                                        val url = "https://files.molicloud.com/" + mollyReply[i]?.content
+                                        val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
                                         subject.sendImage(mollyFile(url))
                                     }
                                 false
@@ -74,13 +75,14 @@ object EventListener : Service() {
                             groupName = group.name,
                             groupId = group.id
                         )
-                        for (i in mollyReply.keys)
-                            if (mollyReply[i]?.typed == 1) {
+                        val mollyReplyTempo = mollyReply
+                        for (i in mollyReplyTempo.keys)
+                            if (mollyReplyTempo[i]?.typed == 1) {
                                 val random = (100..3000).random().toLong()
                                 delay(random)
-                                subject.sendMessage(mollyReply[i]?.content.toString())
+                                subject.sendMessage(mollyReplyTempo[i]?.content.toString())
                             } else {
-                                val url = "https://files.molicloud.com/" + mollyReply[i]?.content
+                                val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
                                 subject.sendImage(mollyFile(url))
                             }
                     }
@@ -99,13 +101,14 @@ object EventListener : Service() {
                                 userId = sender.id,
                                 userName = senderName
                             )
-                            for (i in mollyReply.keys)
-                                if (mollyReply[i]?.typed == 1) {
+                            val mollyReplyTempo = mollyReply
+                            for (i in mollyReplyTempo.keys)
+                                if (mollyReplyTempo[i]?.typed == 1) {
                                     val random = (100..3000).random().toLong()
                                     delay(random)
-                                    subject.sendMessage(mollyReply[i]?.content.toString())
+                                    subject.sendMessage(mollyReplyTempo[i]?.content.toString())
                                 } else {
-                                    val url = "https://files.molicloud.com/" + mollyReply[i]?.content
+                                    val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
                                     subject.sendImage(mollyFile(url))
                                 }
                             times = 0
