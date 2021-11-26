@@ -10,7 +10,7 @@ data class MollyData(
     @SerialName("code") val code: String,
     @SerialName("message") val message: String,
     @SerialName("plugin") val plugin: String?,
-    @SerialName("data") val data: JsonArray?
+    @SerialName("data") val data: JsonArray
 )
 
 @Serializable
@@ -18,6 +18,12 @@ data class MollyReply(
     @SerialName("content") val content: String,
     @SerialName("typed") val typed: Int,
     @SerialName("remark") val remark: String?
+)
+
+@Serializable
+data class MollyError(
+    @SerialName("code") val code: String,
+    @SerialName("message") val message: String
 )
 
 internal val Json = Json {
