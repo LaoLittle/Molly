@@ -28,7 +28,7 @@ private fun request(
     val mollyUrl = "https://i.mly.app/reply"
     val connection = URL(mollyUrl).openConnection() as HttpURLConnection
     connection.requestMethod = "POST"
-    connection.connectTimeout = 300000
+    connection.connectTimeout = 3000
     connection.doOutput = true
     connection.doInput = true
     connection.useCaches = false
