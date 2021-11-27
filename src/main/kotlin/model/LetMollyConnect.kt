@@ -30,6 +30,8 @@ fun request(
 ) {
     val mollyUrl = "https://i.mly.app/reply"
     val connection = URL(mollyUrl).openConnection() as HttpsURLConnection
+
+    // 设置请求
     connection.requestMethod = "POST"
     connection.connectTimeout = 3000
     connection.doOutput = true
@@ -41,7 +43,7 @@ fun request(
     connection.setRequestProperty("Api-Secret", api_secret)
     connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
 
-    useInsecureSSL()
+    useInsecureSSL() //忽略SSL证书
 
     connection.connect()
 
@@ -65,7 +67,7 @@ fun request(
         it.writeChars(json.toString())
         it.flush()
     }
-    connection.disconnect() // 断开连接
+    connection.disconnect()
 
     val input = connection.inputStream
     val jsonStr = if (input != null) {
@@ -121,8 +123,6 @@ fun mollyFile(url: String): InputStream {
 }
 
 fun useInsecureSSL() {
-
-    // Create a trust manager that does not validate certificate chains
     val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
         override fun getAcceptedIssuers(): Array<X509Certificate>? = null
         override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
@@ -133,9 +133,7 @@ fun useInsecureSSL() {
     sc.init(null, trustAllCerts, java.security.SecureRandom())
     HttpsURLConnection.setDefaultSSLSocketFactory(sc.socketFactory)
 
-    // Create all-trusting host name verifier
     val allHostsValid = HostnameVerifier { _, _ -> true }
 
-    // Install the all-trusting host verifier
     HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid)
 }
