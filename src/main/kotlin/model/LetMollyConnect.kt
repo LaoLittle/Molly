@@ -13,20 +13,23 @@ import org.laolittle.plugin.molly.MollyConfig.api_secret
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.cert.X509Certificate
+import javax.net.ssl.*
 
 var mollyReply: Map<Int, MollyReply> = linkedMapOf()
 var inActMember = mutableListOf<Long>()
 
-private fun request(
+@ExperimentalSerializationApi
+fun request(
     message: String,
     userId: Long,
     userName: String,
     groupName: String?,
     groupId: Long?,
     inGroup: Boolean
-): String {
+) {
     val mollyUrl = "https://i.mly.app/reply"
-    val connection = URL(mollyUrl).openConnection() as HttpURLConnection
+    val connection = URL(mollyUrl).openConnection() as HttpsURLConnection
     connection.requestMethod = "POST"
     connection.connectTimeout = 3000
     connection.doOutput = true
@@ -37,6 +40,9 @@ private fun request(
     connection.setRequestProperty("Api-Key", api_key)
     connection.setRequestProperty("Api-Secret", api_secret)
     connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
+
+    useInsecureSSL()
+
     connection.connect()
 
     val out = DataOutputStream(connection.outputStream)
@@ -62,7 +68,7 @@ private fun request(
     connection.disconnect() // 断开连接
 
     val input = connection.inputStream
-    return if (input != null) {
+    val jsonStr = if (input != null) {
         val writer: Writer = StringWriter()
         val buffer = CharArray(1024)
         input.use {
@@ -78,6 +84,13 @@ private fun request(
     } else {
         ""
     }
+    try{
+        val mollyData: MollyData = Json.decodeFromString(jsonStr)
+        decode(mollyData.data)
+    } catch (e: Exception){
+        val mollyError: MollyError = Json.decodeFromString(jsonStr)
+        hasError(mollyError)
+    }
 }
 
 @ExperimentalSerializationApi
@@ -91,44 +104,6 @@ private fun hasError(mollyError: MollyError) {
     }
 }
 
-@ExperimentalSerializationApi
-fun request(message: String, userId: Long, userName: String, groupName: String, groupId: Long) {
-    val mollyJsonString = request(
-        message,
-        userId,
-        userName,
-        groupName,
-        groupId,
-        true
-    )
-    try{
-        val mollyData: MollyData = Json.decodeFromString(mollyJsonString)
-        decode(mollyData.data)
-    } catch (e: Exception){
-        val mollyError: MollyError = Json.decodeFromString(mollyJsonString)
-        hasError(mollyError)
-    }
-
-}
-
-@ExperimentalSerializationApi
-fun request(message: String, userId: Long, userName: String) {
-    val mollyJsonString = request(
-        message,
-        userId,
-        userName,
-        null,
-        null,
-        false
-    )
-    try {
-        val mollyData: MollyData = Json.decodeFromString(mollyJsonString)
-        decode(mollyData.data)
-    } catch (e: Exception) {
-        val mollyError: MollyError = Json.decodeFromString(mollyJsonString)
-        hasError(mollyError)
-    }
-}
 
 @ExperimentalSerializationApi
 private fun decode(msgData: JsonArray) {
@@ -142,4 +117,25 @@ fun mollyFile(url: String): InputStream {
     connection.connect()
     connection.disconnect()
     return connection.inputStream
+
+}
+
+fun useInsecureSSL() {
+
+    // Create a trust manager that does not validate certificate chains
+    val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+        override fun getAcceptedIssuers(): Array<X509Certificate>? = null
+        override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+        override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+    })
+
+    val sc = SSLContext.getInstance("SSL")
+    sc.init(null, trustAllCerts, java.security.SecureRandom())
+    HttpsURLConnection.setDefaultSSLSocketFactory(sc.socketFactory)
+
+    // Create all-trusting host name verifier
+    val allHostsValid = HostnameVerifier { _, _ -> true }
+
+    // Install the all-trusting host verifier
+    HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid)
 }
