@@ -19,4 +19,5 @@ abstract class Service(ctx: CoroutineContext? = null) : CoroutineScope {
     protected abstract suspend fun main()
 
     fun start(): Job = this.launch(context = this.coroutineContext) { main() }
+
 }
