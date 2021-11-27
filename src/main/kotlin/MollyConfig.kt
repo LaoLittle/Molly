@@ -10,4 +10,7 @@ object MollyConfig : AutoSavePluginConfig("MollyConfig") {
 
     @ValueDescription("在此填入你的Api-Secret")
     val api_secret: String by value("")
+
+    @ValueDescription("你的机器人昵称")
+    val Name: String by value("茉莉")
 }
