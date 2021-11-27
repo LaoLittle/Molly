@@ -23,7 +23,7 @@ object EventListener : Service() {
         GlobalEventChannel.subscribeGroupMessages {
             finding(Regex(Name)){
                 if (inActMember.contains(sender.id)) return@finding
-                groupReply(this@EventListener, message.content)
+                reply(this@EventListener, message.content)
             }
             atBot {
                 if (inActMember.contains(sender.id)) return@atBot
