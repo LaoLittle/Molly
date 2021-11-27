@@ -20,10 +20,10 @@ suspend fun <T : MessageEvent> T.conversation(
     scope: CoroutineScope,
     block: suspend ConversationBuilder.() -> Unit
 ): ConversationBuilder {
-    suspend fun executeICB() = ConversationBuilder(
+    suspend fun execute() = ConversationBuilder(
             eventContext = this@conversation,
             conversationBlock = block
         ).also { it() }
 
-    return withContext(scope.coroutineContext + scope.coroutineContext) { executeICB() }
+    return withContext(scope.coroutineContext + scope.coroutineContext) { execute() }
 }
