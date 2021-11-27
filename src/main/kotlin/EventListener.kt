@@ -1,135 +1,143 @@
 package org.laolittle.plugin.molly
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.serialization.ExperimentalSerializationApi
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeFriendMessages
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.whileSelectMessages
-import org.laolittle.plugin.molly.model.inActMember
-import org.laolittle.plugin.molly.model.mollyFile
-import org.laolittle.plugin.molly.model.mollyReply
-import org.laolittle.plugin.molly.model.request
+import net.mamoe.mirai.message.data.content
+import org.laolittle.plugin.molly.MollyConfig.Name
+import org.laolittle.plugin.molly.model.*
+import org.laolittle.plugin.molly.utils.conversation
+import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalSerializationApi
 object EventListener : Service() {
     override suspend fun main() {
-            GlobalEventChannel.subscribeGroupMessages {
-                atBot {
-                    if (inActMember.contains(sender.id)) return@atBot
-                    inActMember.add(sender.id)
-                    val msg = it
-                        .replace("@${bot.id}", "")
-                        .replace(" ", "")
-                    if (msg == "") {
-                        subject.sendMessage(
-                            when ((0..4).random()) {
-                                0 -> "？"
-                                1 -> "怎么"
-                                2 -> "怎么了"
-                                3 -> "什么？"
-                                4 -> "在"
-                                else -> "嗯？"
-                            }
-                        )
-                        whileSelectMessages {
-                            default { message ->
-                                request(
-                                    message = message,
-                                    userId = sender.id,
-                                    userName = senderName,
-                                    groupName = group.name,
-                                    groupId = group.id
-                                )
-                                val mollyReplyTempo = mollyReply
-                                for (i in mollyReplyTempo.keys)
-                                    if (mollyReplyTempo[i]?.typed == 1) {
-                                        val random = (100..3000).random().toLong()
-                                        delay(random)
-                                        subject.sendMessage(mollyReplyTempo[i]?.content.toString())
-                                    } else {
-                                        val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
-                                        subject.sendImage(mollyFile(url))
-                                    }
-                                false
-                            }
-                            timeout(10000) {
-                                subject.sendMessage(
-                                    when ((0..4).random()) {
-                                        0 -> "没事我就溜了"
-                                        1 -> "emmmmm"
-                                        2 -> "......"
-                                        3 -> "溜了"
-                                        else -> "？"
-                                    }
-                                )
-                                false
-                            }
-                        }
-                    } else {
+
+        GlobalEventChannel.subscribeGroupMessages {
+            finding(Regex(Name)){
+                if (inActMember.contains(sender.id)) return@finding
+                groupReply(this@EventListener, message.content)
+            }
+            atBot {
+                if (inActMember.contains(sender.id)) return@atBot
+                val msg = it
+                    .replace("@${bot.id}", "")
+                    .replace(" ", "")
+                groupReply(this@EventListener, msg)
+            }
+        }
+
+        GlobalEventChannel.subscribeFriendMessages {
+            finding(Regex("聊天")) {
+                subject.sendMessage("在呢")
+                whileSelectMessages {
+                    var times = 0
+                    default {
                         request(
-                            message = msg,
+                            message = it,
                             userId = sender.id,
                             userName = senderName,
-                            groupName = group.name,
-                            groupId = group.id
-                        )
-                        val mollyReplyTempo = mollyReply
-                        for (i in mollyReplyTempo.keys)
-                            if (mollyReplyTempo[i]?.typed == 1) {
-                                val random = (100..3000).random().toLong()
-                                delay(random)
-                                subject.sendMessage(mollyReplyTempo[i]?.content.toString())
-                            } else {
-                                val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
-                                subject.sendImage(mollyFile(url))
-                            }
-                    }
-                    inActMember.remove(sender.id)
-                    mollyReply = linkedMapOf()
-                }
-            }
-
-            GlobalEventChannel.subscribeFriendMessages {
-                finding(Regex("聊天")) {
-                    subject.sendMessage("在呢")
-                    whileSelectMessages {
-                        var times = 0
-                        default {
-                            request(
-                                message = it,
-                                userId = sender.id,
-                                userName = senderName
-                            )
-                            val mollyReplyTempo = mollyReply
-                            for (i in mollyReplyTempo.keys)
-                                if (mollyReplyTempo[i]?.typed == 1) {
-                                    val random = (100..3000).random().toLong()
-                                    delay(random)
-                                    subject.sendMessage(mollyReplyTempo[i]?.content.toString())
-                                } else {
-                                    val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
-                                    subject.sendImage(mollyFile(url))
-                                }
-                            times = 0
-                            true
-                        }
-                        startsWith("不聊了") {
-                            subject.sendMessage("好吧")
+                            null,
+                            null,
                             false
-                        }
-                        timeout(10000) {
-                            times++
-                            if (times >= 2) {
-                                subject.sendMessage("我下咯")
-                                return@timeout false
-                            }
-                            true
-                        }
+                        )
+                        reply(this@EventListener, mollyReply)
+                        times = 0
+                        true
                     }
-                    mollyReply = linkedMapOf()
+                    startsWith("不聊了") {
+                        subject.sendMessage("好吧")
+                        false
+                    }
+                    timeout(10000) {
+                        times++
+                        if (times >= 2) {
+                            subject.sendMessage("我下咯")
+                            return@timeout false
+                        }
+                        true
+                    }
                 }
+                mollyReply = linkedMapOf()
             }
         }
     }
+}
+
+@ExperimentalSerializationApi
+@OptIn(ExperimentalContracts::class)
+suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
+    conversation(ctx) {
+        request(
+            message = msg,
+            userId = sender.id,
+            userName = senderName,
+            groupName = group.name,
+            groupId = group.id,
+            true
+        )
+        reply(EventListener, mollyReply)
+    }
+}
+
+suspend fun MessageEvent.reply(ctx: CoroutineScope, mollyReplyTempo: Map<Int, MollyReply>){
+    conversation(ctx){
+        for (i in mollyReplyTempo.keys)
+            if (mollyReplyTempo[i]?.typed == 1) {
+                val random = (100..3000).random().toLong()
+                delay(random)
+                subject.sendMessage(mollyReplyTempo[i]?.content.toString())
+            } else {
+                val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
+                subject.sendImage(mollyFile(url))
+            }
+    }
+}
+
+@ExperimentalSerializationApi
+suspend fun GroupMessageEvent.groupReply(ctx: CoroutineScope, msg: String){
+    conversation(ctx){
+        inActMember.add(sender.id)
+        if (msg == "") {
+            subject.sendMessage(
+                when ((0..4).random()) {
+                    0 -> "？"
+                    1 -> "怎么"
+                    2 -> "怎么了"
+                    3 -> "什么？"
+                    4 -> "在"
+                    else -> "嗯？"
+                }
+            )
+            whileSelectMessages {
+                default { msgPost ->
+                    reply(EventListener, msgPost)
+                    false
+                }
+                timeout(10000) {
+                    subject.sendMessage(
+                        when ((0..4).random()) {
+                            0 -> "没事我就溜了"
+                            1 -> "emmmmm"
+                            2 -> "......"
+                            3 -> "溜了"
+                            else -> "？"
+                        }
+                    )
+                    false
+                }
+            }
+        } else {
+            reply(EventListener, msg)
+        }
+        inActMember.remove(sender.id)
+        mollyReply = linkedMapOf()
+    }
+}
