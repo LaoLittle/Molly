@@ -60,10 +60,9 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
                 }
             )
             whileSelectMessages {
-                if (replyTimes == 0) return@whileSelectMessages
                 default { msgPost ->
-                    remainingTimes--
                     reply(ctx, msgPost)
+                    remainingTimes--
                     if (remainingTimes <= 0) return@default false
                     true
                 }
@@ -84,13 +83,11 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
                 }
             }
         } else {
-            remainingTimes--
             reply(ctx, msg)
             whileSelectMessages {
-                if (replyTimes == 0) return@whileSelectMessages
                 default {
-                    remainingTimes--
                     reply(ctx, it)
+                    remainingTimes--
                     if (remainingTimes <= 0) return@default false
                     true
                 }
