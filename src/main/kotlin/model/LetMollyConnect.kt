@@ -11,7 +11,6 @@ import org.laolittle.plugin.molly.Molly
 import org.laolittle.plugin.molly.MollyConfig.api_key
 import org.laolittle.plugin.molly.MollyConfig.api_secret
 import java.io.*
-import java.net.HttpURLConnection
 import java.net.URL
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
@@ -39,13 +38,12 @@ fun request(
     connection.useCaches = false
     connection.instanceFollowRedirects = true
 
+    // 设置Api请求头
     connection.setRequestProperty("Api-Key", api_key)
     connection.setRequestProperty("Api-Secret", api_secret)
     connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
 
-    useInsecureSSL() //忽略SSL证书
-
-    connection.connect()
+    useInsecureSSL() // 忽略SSL证书
 
     val out = DataOutputStream(connection.outputStream)
     val json = if (inGroup)
@@ -63,11 +61,21 @@ fun request(
         put("from", userId)
         put("fromName", userName)
     }
+
+    // 将Json请求写入连接
     out.use {
         it.writeChars(json.toString())
         it.flush()
     }
-    connection.disconnect()
+    // 尝试连接
+    try {
+        connection.connect()
+    }catch (e:Exception){
+        Molly.logger.error { "连接失败: $e" }
+    }finally {
+        connection.disconnect()
+    }
+
 
     val input = connection.inputStream
     val jsonStr = if (input != null) {
@@ -114,9 +122,14 @@ private fun decode(msgData: JsonArray) {
 }
 
 fun mollyFile(url: String): InputStream {
-    val connection: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
-    connection.connect()
-    connection.disconnect()
+    val connection = URL(url).openConnection() as HttpsURLConnection
+    try {
+        connection.connect()
+    }catch (e: Exception){
+        e.printStackTrace()
+    }finally {
+        connection.disconnect()
+    }
     return connection.inputStream
 
 }
