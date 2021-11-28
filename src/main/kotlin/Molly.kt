@@ -22,4 +22,8 @@ object Molly : KotlinPlugin(
             logger.info { "请修改配置文件添加ApiKey和ApiSecret，配置文件位于./config/Molly/MollyConfig.yml" }
         else EventListener.start()
     }
+
+    override fun onDisable() {
+        logger.info { "已卸载" }
+    }
 }
