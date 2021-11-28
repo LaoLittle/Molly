@@ -33,7 +33,7 @@ fun request(
 
     // 设置请求
     connection.requestMethod = "POST"
-    connection.connectTimeout = 3000
+    connection.connectTimeout = 5000
     connection.doOutput = true
     connection.doInput = true
     connection.useCaches = false
