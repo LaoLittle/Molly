@@ -21,6 +21,40 @@ object EventListener : Service() {
     override suspend fun main() {
 
         GlobalEventChannel.subscribeGroupMessages {
+            /*"mollydebug" {
+                subject.sendMessage("start")
+                whileSelectMessages {
+                    "stop" {
+                        subject.sendMessage("stopped")
+                        false
+                    }
+                    default {
+                        request(
+                            message = it,
+                            userId = sender.id,
+                            userName = senderName,
+                            groupName = group.name,
+                            groupId = group.id,
+                            true
+                        )
+                        val mollyReplyTempo = mollyReply
+                        subject.sendMessage(mollyReplyTempo.toString())
+                        for (i in mollyReplyTempo.keys)
+                            if (mollyReplyTempo[i]?.typed == 1) {
+                                val random = (100..3000).random().toLong()
+                                delay(random)
+                                subject.sendMessage(mollyReplyTempo[i]?.content.toString())
+                            } else {
+                                val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
+                                subject.sendImage(mollyFile(url))
+                            }
+                        mollyReply = linkedMapOf()
+                        true
+                    }
+                }
+            }
+
+             */
             finding(Regex(Name)){
                 if (inActMember.contains(sender.id)) return@finding
                 reply(this@EventListener, message.content)
@@ -37,8 +71,8 @@ object EventListener : Service() {
         GlobalEventChannel.subscribeFriendMessages {
             finding(Regex("聊天")) {
                 subject.sendMessage("在呢")
+                var times = 0
                 whileSelectMessages {
-                    var times = 0
                     default {
                         request(
                             message = it,
@@ -65,7 +99,6 @@ object EventListener : Service() {
                         true
                     }
                 }
-                mollyReply = linkedMapOf()
             }
         }
     }
@@ -87,18 +120,19 @@ suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
     }
 }
 
-suspend fun MessageEvent.reply(ctx: CoroutineScope, mollyReplyTempo: Map<Int, MollyReply>){
+suspend fun MessageEvent.reply(ctx: CoroutineScope, mollyReply: Map<Int, MollyReply>){
     conversation(ctx){
-        for (i in mollyReplyTempo.keys)
-            if (mollyReplyTempo[i]?.typed == 1) {
+        for (i in mollyReply.keys)
+            if (mollyReply[i]?.typed == 1) {
                 val random = (100..3000).random().toLong()
                 delay(random)
-                subject.sendMessage(mollyReplyTempo[i]?.content.toString())
+                subject.sendMessage(mollyReply[i]?.content.toString())
             } else {
-                val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
+                val url = "https://files.molicloud.com/" + mollyReply[i]?.content
                 subject.sendImage(mollyFile(url))
             }
     }
+    org.laolittle.plugin.molly.model.mollyReply = linkedMapOf()
 }
 
 @ExperimentalSerializationApi
@@ -138,6 +172,5 @@ suspend fun GroupMessageEvent.groupReply(ctx: CoroutineScope, msg: String){
             reply(EventListener, msg)
         }
         inActMember.remove(sender.id)
-        mollyReply = linkedMapOf()
     }
 }
