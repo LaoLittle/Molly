@@ -7,10 +7,12 @@ import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.whileSelectMessages
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import net.mamoe.mirai.message.data.buildMessageChain
+import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
 import org.laolittle.plugin.molly.MollyConfig.replyTimes
 import org.laolittle.plugin.molly.utils.conversation
 import kotlin.contracts.ExperimentalContracts
-
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalContracts::class)
@@ -24,23 +26,28 @@ suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
             groupId = group.id,
             true
         )
-        reply(ctx, mollyReply)
+        reply(ctx, mollyReply, doQuoteReply)
     }
 }
 
-suspend fun MessageEvent.reply(ctx: CoroutineScope, mollyReply: Map<Int, MollyReply>) {
+suspend fun MessageEvent.reply(ctx: CoroutineScope, mollyReplyTempo: Map<Int, MollyReply>, quoteReply: Boolean = false) {
     conversation(ctx) {
-        for (i in mollyReply.keys)
-            if (mollyReply[i]?.typed == 1) {
+        for (i in mollyReplyTempo.keys)
+            if (mollyReplyTempo[i]?.typed == 1) {
+                val send = buildMessageChain {
+                    add(mollyReplyTempo[i]?.content.toString())
+                }
                 val random = (100..3000).random().toLong()
                 delay(random)
-                subject.sendMessage(mollyReply[i]?.content.toString())
+                if (quoteReply)
+                    subject.sendMessage(send.plus(message.quote()))
+                else subject.sendMessage(send)
             } else {
-                val url = "https://files.molicloud.com/" + mollyReply[i]?.content
+                val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
                 subject.sendImage(mollyFile(url))
             }
     }
-    org.laolittle.plugin.molly.model.mollyReply = linkedMapOf()
+    mollyReply = linkedMapOf()
 }
 
 @ExperimentalSerializationApi
