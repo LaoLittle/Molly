@@ -16,4 +16,7 @@ object MollyConfig : AutoSavePluginConfig("MollyConfig") {
 
     @ValueDescription("群聊呼叫机器人后持续回复的次数，默认为0")
     val replyTimes: Int by value(0)
+
+    @ValueDescription("是否引用回复")
+    val doQuoteReply: Boolean by value(false)
 }
