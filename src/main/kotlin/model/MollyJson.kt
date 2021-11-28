@@ -7,8 +7,6 @@ import kotlinx.serialization.json.JsonArray
 
 @Serializable
 data class MollyData(
-    @SerialName("code") val code: String,
-    @SerialName("message") val message: String,
     @SerialName("plugin") val plugin: String?,
     @SerialName("data") val data: JsonArray
 )
