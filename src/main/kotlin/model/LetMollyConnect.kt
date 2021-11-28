@@ -106,7 +106,6 @@ private fun hasError(mollyError: MollyError) {
     }
 }
 
-
 @ExperimentalSerializationApi
 private fun decode(msgData: JsonArray) {
     for ((i, json) in msgData.withIndex()) {
