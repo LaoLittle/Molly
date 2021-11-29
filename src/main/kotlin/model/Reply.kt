@@ -12,10 +12,8 @@ import net.mamoe.mirai.message.data.buildMessageChain
 import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
 import org.laolittle.plugin.molly.MollyConfig.replyTimes
 import org.laolittle.plugin.molly.utils.conversation
-import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalSerializationApi
-@OptIn(ExperimentalContracts::class)
 suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
     conversation(ctx) {
         request(
@@ -54,7 +52,6 @@ suspend fun MessageEvent.reply(ctx: CoroutineScope, mollyReplyTempo: Map<Int, Mo
 suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
     conversation(ctx) {
         inActMember.add(sender.id)
-        var remainingTimes = replyTimes
         if (msg == "") {
             subject.sendMessage(
                 when ((0..4).random()) {
@@ -66,7 +63,10 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
                     else -> "嗯？"
                 }
             )
-            whileSelectMessages {
+            for (i in 1..replyTimes){
+                if (!waitReply(ctx, i)) break
+            }
+            /*whileSelectMessages {
                 default { msgPost ->
                     reply(ctx, msgPost)
                     remainingTimes--
@@ -89,17 +89,42 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
                     true
                 }
             }
+
+             */
         } else {
             reply(ctx, msg)
-            whileSelectMessages {
-                default {
-                    reply(ctx, it)
-                    remainingTimes--
-                    if (remainingTimes <= 0) return@default false
-                    true
-                }
-            }
+            for (i in 1..replyTimes)
+                if (!waitReply(ctx, i)) break
         }
         inActMember.remove(sender.id)
     }
+}
+
+@ExperimentalSerializationApi
+suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
+    var keepLoop = true
+    conversation(ctx){
+        whileSelectMessages {
+            default {
+                reply(ctx, it)
+                false
+            }
+            timeout(10_000){
+                if (i == 1){
+                    subject.sendMessage(
+                        when ((0..4).random()) {
+                            0 -> "没事我就溜了"
+                            1 -> "emmmmm"
+                            2 -> "......"
+                            3 -> "溜了"
+                            else -> "？"
+                        }
+                    )
+                }
+                keepLoop = false
+                false
+            }
+        }
+    }
+    return keepLoop
 }
