@@ -34,7 +34,6 @@ fun request(
     connection.requestMethod = "POST"
     connection.connectTimeout = 5000
     connection.doOutput = true
-    connection.doInput = true
     connection.useCaches = false
     connection.instanceFollowRedirects = true
 
