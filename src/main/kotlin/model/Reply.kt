@@ -32,7 +32,11 @@ suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
     }
 }
 
-suspend fun MessageEvent.reply(ctx: CoroutineScope, mollyReplyTempo: Map<Int, MollyReply>, quoteReply: Boolean = false) {
+suspend fun MessageEvent.reply(
+    ctx: CoroutineScope,
+    mollyReplyTempo: Map<Int, MollyReply>,
+    quoteReply: Boolean = false
+) {
     conversation(ctx) {
         for (i in mollyReplyTempo.keys)
             if (mollyReplyTempo[i]?.typed == 1) {
@@ -67,7 +71,7 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
                     else -> "嗯？"
                 }
             )
-            for (i in 1..replyTimes){
+            for (i in 1..replyTimes) {
                 if (!waitReply(ctx, i)) break
             }
             /*whileSelectMessages {
@@ -113,14 +117,14 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
 @ExperimentalSerializationApi
 suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
     var timeout = true
-    conversation(ctx){
+    conversation(ctx) {
         whileSelectMessages {
             default {
                 reply(ctx, it)
                 false
             }
-            timeout(10_000){
-                if (i == 1){
+            timeout(10_000) {
+                if (i == 1) {
                     subject.sendMessage(
                         when ((0..4).random()) {
                             0 -> "没事我就溜了"

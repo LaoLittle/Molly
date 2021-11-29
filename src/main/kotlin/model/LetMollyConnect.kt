@@ -46,20 +46,13 @@ fun request(
     useInsecureSSL() // 忽略SSL证书
 
     val out = DataOutputStream(connection.outputStream)
-    val json = if (inGroup)
-        buildJsonObject {
-            put("content", message)
-            put("type", 2)
-            put("from", userId)
-            put("fromName", userName)
-            put("to", groupId)
-            put("toName", groupName)
-        }
-    else buildJsonObject {
+    val json = buildJsonObject {
         put("content", message)
-        put("type", 1)
+        put("type", if (!inGroup) 1 else 2)
         put("from", userId)
         put("fromName", userName)
+        put("to", groupId)
+        put("toName", groupName)
     }
 
     // 将Json请求写入连接
@@ -70,9 +63,9 @@ fun request(
     // 尝试连接
     try {
         connection.connect()
-    }catch (e:Exception){
+    } catch (e: Exception) {
         Molly.logger.error { "连接失败: $e" }
-    }finally {
+    } finally {
         connection.disconnect()
     }
 
@@ -94,10 +87,10 @@ fun request(
     } else {
         ""
     }
-    try{
+    try {
         val mollyData: MollyData = Json.decodeFromString(jsonStr)
         decode(mollyData.data)
-    } catch (e: Exception){
+    } catch (e: Exception) {
         val mollyError: MollyError = Json.decodeFromString(jsonStr)
         hasError(mollyError)
     }
@@ -125,9 +118,9 @@ fun mollyFile(url: String): InputStream {
     val connection = URL(url).openConnection() as HttpsURLConnection
     try {
         connection.connect()
-    }catch (e: Exception){
+    } catch (e: Exception) {
         e.printStackTrace()
-    }finally {
+    } finally {
         connection.disconnect()
     }
     return connection.inputStream

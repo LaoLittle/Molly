@@ -28,6 +28,7 @@ data class MollyReply(
     @SerialName("typed") val typed: Int,
     @SerialName("remark") val remark: String?
 )
+
 /**
  * 当尝试接收消息失败时Molly机器人返回的错误信息
  * @param code Molly机器人返回的错误代码

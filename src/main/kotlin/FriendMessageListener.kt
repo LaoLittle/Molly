@@ -9,26 +9,34 @@ import org.laolittle.plugin.molly.model.reply
 import org.laolittle.plugin.molly.model.request
 
 @ExperimentalSerializationApi
-object FriendMessageListener : Service(){
+object FriendMessageListener : Service() {
     override suspend fun main() {
         GlobalEventChannel.subscribeFriendMessages {
             finding(Regex("聊天")) {
                 subject.sendMessage("在呢")
+                var loop = true
+                while (loop)
                 whileSelectMessages {
                     default {
                         request(
                             message = it,
                             userId = sender.id,
                             userName = senderName,
-                            null,
-                            null,
+                            groupName = null,
+                            groupId = null,
                             false
                         )
                         reply(this@FriendMessageListener, mollyReply)
-                        true
+                        false
                     }
                     startsWith("不聊了") {
                         subject.sendMessage("好吧")
+                        loop = false
+                        false
+                    }
+                    timeout(30_000) {
+                        subject.sendMessage("不聊了么？那我走了")
+                        loop = false
                         false
                     }
                 }
