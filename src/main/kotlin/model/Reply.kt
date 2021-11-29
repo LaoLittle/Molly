@@ -74,31 +74,6 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
             for (i in 1..replyTimes) {
                 if (!waitReply(ctx, i)) break
             }
-            /*whileSelectMessages {
-                default { msgPost ->
-                    reply(ctx, msgPost)
-                    remainingTimes--
-                    if (remainingTimes <= 0) return@default false
-                    true
-                }
-                timeout(10000) {
-                    if (remainingTimes == replyTimes) {
-                        subject.sendMessage(
-                            when ((0..4).random()) {
-                                0 -> "没事我就溜了"
-                                1 -> "emmmmm"
-                                2 -> "......"
-                                3 -> "溜了"
-                                else -> "？"
-                            }
-                        )
-                        return@timeout false
-                    }
-                    true
-                }
-            }
-
-             */
         } else {
             reply(ctx, msg)
             for (i in 1..replyTimes)
@@ -116,15 +91,17 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
 
 @ExperimentalSerializationApi
 suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
-    var timeout = true
+    var isTimeout = true
+    var notReplied = true
     conversation(ctx) {
         whileSelectMessages {
             default {
+                notReplied = false
                 reply(ctx, it)
                 false
             }
             timeout(10_000) {
-                if (i == 1) {
+                if ((i == 1) && (replyTimes > 0) && notReplied) {
                     subject.sendMessage(
                         when ((0..4).random()) {
                             0 -> "没事我就溜了"
@@ -135,10 +112,10 @@ suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
                         }
                     )
                 }
-                timeout = false
+                isTimeout = false
                 false
             }
         }
     }
-    return timeout
+    return isTimeout
 }
