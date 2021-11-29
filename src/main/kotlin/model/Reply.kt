@@ -13,6 +13,10 @@ import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
 import org.laolittle.plugin.molly.MollyConfig.replyTimes
 import org.laolittle.plugin.molly.utils.conversation
 
+/**
+ * 接收消息并发送请求到Molly机器人
+ * */
+
 @ExperimentalSerializationApi
 suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
     conversation(ctx) {
@@ -100,9 +104,15 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
     }
 }
 
+/**
+ * 挂起当前协程并监听消息
+ *
+ * @return 是否超时
+ * */
+
 @ExperimentalSerializationApi
 suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
-    var keepLoop = true
+    var timeout = true
     conversation(ctx){
         whileSelectMessages {
             default {
@@ -121,10 +131,10 @@ suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
                         }
                     )
                 }
-                keepLoop = false
+                timeout = false
                 false
             }
         }
     }
-    return keepLoop
+    return timeout
 }
