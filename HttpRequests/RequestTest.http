@@ -1,0 +1,15 @@
+POST https://i.mly.app/reply
+Content-Type: application/json;charset=UTF-8
+Api-Key: 00506c2611c695b71d46a410133e1335
+Api-Secret: laolittle114514
+
+{
+  "content": "真是太厉害了",
+  "type": 2,
+  "from": 2652386228,
+  "fromName": "tsu dzu ki",
+  "to": 652934370,
+  "toName": "萝卜子Test"
+}
+
+###

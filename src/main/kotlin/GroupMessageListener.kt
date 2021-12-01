@@ -4,7 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.message.data.content
-import org.laolittle.plugin.molly.MollyConfig.Name
+import org.laolittle.plugin.molly.MollyConfig.name
 import org.laolittle.plugin.molly.model.groupLoopReply
 import org.laolittle.plugin.molly.model.inActMember
 
@@ -47,7 +47,7 @@ object GroupMessageListener : Service() {
             }
 
              */
-            finding(Regex(Name)) {
+            finding(Regex(name)) {
                 if (inActMember.contains(sender.id)) return@finding
                 groupLoopReply(this@GroupMessageListener, message.content)
             }

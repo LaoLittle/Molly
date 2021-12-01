@@ -12,7 +12,7 @@ object MollyConfig : AutoSavePluginConfig("MollyConfig") {
     val api_secret: String by value("")
 
     @ValueDescription("你的机器人昵称")
-    val Name: String by value("茉莉")
+    val name: String by value("茉莉")
 
     @ValueDescription("群聊呼叫机器人后持续回复的次数，默认为0")
     val replyTimes: Int by value(0)

@@ -92,16 +92,14 @@ suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
 @ExperimentalSerializationApi
 suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
     var isTimeout = true
-    var notReplied = true
     conversation(ctx) {
         whileSelectMessages {
             default {
-                notReplied = false
                 reply(ctx, it)
                 false
             }
             timeout(10_000) {
-                if ((i == 1) && (replyTimes > 0) && notReplied) {
+                if ((i == 1) && (replyTimes > 0)) {
                     subject.sendMessage(
                         when ((0..4).random()) {
                             0 -> "没事我就溜了"
