@@ -6,7 +6,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.put
 import net.mamoe.mirai.utils.error
+import net.mamoe.mirai.utils.info
 import org.laolittle.plugin.molly.Molly
+import org.laolittle.plugin.molly.MollyConfig
 import org.laolittle.plugin.molly.utils.OkHttp.post
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
@@ -27,7 +29,7 @@ object MollyApiService {
     ) {
         val mollyUrl = "https://i.mly.app/reply"
 
-        val json = buildJsonObject {
+        val jsonRequest = buildJsonObject {
             put("content", message)
             put("type", if (!inGroup) 1 else 2)
             put("from", userId)
@@ -37,12 +39,14 @@ object MollyApiService {
         }
 
         useInsecureSSL() // 忽略SSL证书
-        val jsonStr = json.toString().post(mollyUrl)
+        val json = jsonRequest.toString().post(mollyUrl)
+        if (MollyConfig.doPrintResultsOnConsole)
+            Molly.logger.info { "服务器返回数据: $json" }
         try {
-            val mollyData: MollyData = Json.decodeFromJsonElement(jsonStr)
+            val mollyData: MollyData = Json.decodeFromJsonElement(json)
             decode(mollyData.data)
         } catch (e: Exception) {
-            val mollyError: MollyError = Json.decodeFromJsonElement(jsonStr)
+            val mollyError: MollyError = Json.decodeFromJsonElement(json)
             hasError(mollyError)
         }
     }

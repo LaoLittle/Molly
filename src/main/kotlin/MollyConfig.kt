@@ -19,4 +19,7 @@ object MollyConfig : AutoSavePluginConfig("MollyConfig") {
 
     @ValueDescription("是否引用回复")
     val doQuoteReply: Boolean by value(false)
+
+    @ValueDescription("控制台显示服务器返回的数据")
+    val doPrintResultsOnConsole: Boolean by value(false)
 }
