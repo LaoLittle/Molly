@@ -5,8 +5,8 @@ import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.message.data.content
 import org.laolittle.plugin.molly.MollyConfig.name
-import org.laolittle.plugin.molly.model.groupLoopReply
-import org.laolittle.plugin.molly.model.inActMember
+import org.laolittle.plugin.molly.model.MollyApiService.inActMember
+import org.laolittle.plugin.molly.model.Reply.groupLoopReply
 
 @ExperimentalSerializationApi
 object GroupMessageListener : Service() {
