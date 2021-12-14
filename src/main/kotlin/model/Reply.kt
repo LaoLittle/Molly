@@ -25,7 +25,6 @@ object Reply {
      * 接收消息并发送请求到Molly机器人
      * */
 
-
     @ExperimentalSerializationApi
     suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
         conversation(ctx) {
@@ -68,7 +67,7 @@ object Reply {
 
                     4 -> {
                         val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
-                        getFile(url).use { receiver.uploadAudio(it.toExternalResource()).sendTo(subject) }
+                        getFile(url).toExternalResource().use { receiver.uploadAudio(it).sendTo(subject) }
                     }
 
                     else -> {
