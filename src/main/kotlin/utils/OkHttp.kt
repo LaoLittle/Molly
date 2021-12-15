@@ -18,9 +18,13 @@ object OkHttp {
 
     fun getFile(url: String): InputStream {
         val request = Request.Builder().url(url)
-            .header("Content-Type", "application/json; charset=utf-8")
             .get().build()
-        return client.newCall(request).execute().body!!.byteStream()
+        val responseBody = client.newCall(request).execute().body
+        if (responseBody != null){
+            return responseBody.byteStream()
+        } else {
+            throw Exception("响应为空")
+        }
     }
 
     fun String.post(url: String): JsonElement {
@@ -30,8 +34,12 @@ object OkHttp {
             .header("Api-Key", api_key)
             .header("Api-Secret", api_secret)
             .post(this.toRequestBody(media.toMediaTypeOrNull())).build()
-        val body: String = client.newCall(request).execute().body!!.string()
-        return Json.parseToJsonElement(body)
+        val responseBody = client.newCall(request).execute().body
+        if (responseBody != null){
+            return responseBody.use { Json.parseToJsonElement(it.string()) }
+        } else {
+            throw Exception("响应为空")
+        }
     }
 
 }
