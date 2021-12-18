@@ -7,9 +7,13 @@ plugins {
 }
 
 group = "org.laolittle.plugin.molly"
-version = "1.0.5"
+version = "1.0.7"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        name = "ktor-eap"
+    }
 }

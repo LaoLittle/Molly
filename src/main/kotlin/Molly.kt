@@ -11,7 +11,7 @@ import org.laolittle.plugin.molly.MollyConfig.api_secret
 object Molly : KotlinPlugin(
     JvmPluginDescription(
         id = "org.laolittle.plugin.molly.Molly",
-        version = "1.0.5",
+        version = "1.0.7",
         name = "Molly"
     )
 ) {
@@ -24,6 +24,7 @@ object Molly : KotlinPlugin(
             GroupMessageListener.start()
             FriendMessageListener.start()
         }
+
     }
 
     override fun onDisable() {
