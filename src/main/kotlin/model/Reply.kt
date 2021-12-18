@@ -12,19 +12,20 @@ import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import org.laolittle.plugin.molly.MollyConfig.defaultReply
 import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
 import org.laolittle.plugin.molly.MollyConfig.replyTimes
+import org.laolittle.plugin.molly.MollyConfig.timeoutReply
 import org.laolittle.plugin.molly.model.MollyApiService.inActMember
 import org.laolittle.plugin.molly.model.MollyApiService.mollyReply
 import org.laolittle.plugin.molly.model.MollyApiService.request
-import org.laolittle.plugin.molly.utils.OkHttp.getFile
+import org.laolittle.plugin.molly.utils.KtorOkHttp.getFile
 import org.laolittle.plugin.molly.utils.conversation
 
 object Reply {
     /**
      * 接收消息并发送请求到Molly机器人
      * */
-
     @ExperimentalSerializationApi
     suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
         conversation(ctx) {
@@ -82,24 +83,18 @@ object Reply {
     suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
         conversation(ctx) {
             inActMember.add(sender.id)
-            if (msg == "") {
-                subject.sendMessage(
-                    when ((0..4).random()) {
-                        0 -> "？"
-                        1 -> "怎么"
-                        2 -> "怎么了"
-                        3 -> "什么？"
-                        4 -> "在"
-                        else -> "嗯？"
+            runCatching {
+                if (msg == "") {
+                    subject.sendMessage(defaultReply.random())
+                    if (replyTimes == 0) waitReply(ctx, 1)
+                    for (i in 1..replyTimes) {
+                        if (!waitReply(ctx, i)) break
                     }
-                )
-                for (i in 1..replyTimes) {
-                    if (!waitReply(ctx, i)) break
+                } else {
+                    reply(ctx, msg)
+                    for (i in 1..replyTimes)
+                        if (!waitReply(ctx, i)) break
                 }
-            } else {
-                reply(ctx, msg)
-                for (i in 1..replyTimes)
-                    if (!waitReply(ctx, i)) break
             }
             inActMember.remove(sender.id)
         }
@@ -122,15 +117,7 @@ object Reply {
                 }
                 timeout(10_000) {
                     if ((i == 1) && (replyTimes > 0)) {
-                        subject.sendMessage(
-                            when ((0..4).random()) {
-                                0 -> "没事我就溜了"
-                                1 -> "emmmmm"
-                                2 -> "......"
-                                3 -> "溜了"
-                                else -> "？"
-                            }
-                        )
+                        subject.sendMessage(timeoutReply.random())
                     }
                     isTimeout = false
                     false

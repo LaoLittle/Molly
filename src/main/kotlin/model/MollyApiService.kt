@@ -9,7 +9,7 @@ import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import org.laolittle.plugin.molly.Molly
 import org.laolittle.plugin.molly.MollyConfig
-import org.laolittle.plugin.molly.utils.KtorHttpUtil.post
+import org.laolittle.plugin.molly.utils.KtorOkHttp.post
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
