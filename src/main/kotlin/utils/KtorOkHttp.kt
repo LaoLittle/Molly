@@ -1,6 +1,7 @@
 package org.laolittle.plugin.molly.utils
 
 import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import kotlinx.serialization.json.JsonElement
 import org.laolittle.plugin.molly.MollyConfig.api_key
@@ -8,8 +9,8 @@ import org.laolittle.plugin.molly.MollyConfig.api_secret
 import org.laolittle.plugin.molly.model.Json
 import java.io.InputStream
 
-object KtorHttpUtil {
-    private val client = HttpClient()
+object KtorOkHttp {
+    private val client = HttpClient(OkHttp)
 
     suspend fun getFile(url: String): InputStream {
         return client.get(url)
