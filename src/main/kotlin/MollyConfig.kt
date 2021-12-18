@@ -22,4 +22,20 @@ object MollyConfig : AutoSavePluginConfig("MollyConfig") {
 
     @ValueDescription("控制台显示服务器返回的数据")
     val doPrintResultsOnConsole: Boolean by value(false)
+
+    @ValueDescription(
+        """
+        私聊不触发聊天关键字
+        主要是防止私聊进行功能调用的时候触发此聊天
+        消息中包含就不回复
+        支持正则
+    """
+    )
+    val dontReply: Set<String> by value(setOf("/help", "色图"))
+
+    @ValueDescription("机器人被呼叫但是消息没有任何内容的回应")
+    val defaultReply: Set<String> by value(setOf("？", "怎么", "怎么了", "什么？", "在", "嗯？"))
+
+    @ValueDescription("机器人被呼叫，消息没有任何内容且发送人一直没有说话的回应")
+    val timeoutReply: Set<String> by value(setOf("没事我就溜了", "emmmmm", "......", "溜了", "？"))
 }
