@@ -14,8 +14,8 @@ object FriendMessageListener : Service() {
     override suspend fun main() {
         GlobalEventChannel.subscribeFriendMessages {
             always {
+                if (subject.id == bot.id) return@always
                 dontReply.forEach { dontNode -> if (message.content.contains(Regex(dontNode))) return@always }
-
                 request(
                     message = it,
                     userId = sender.id,
