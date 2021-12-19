@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.laolittle.plugin.molly"
-version = "1.0.7"
+version = "1.0.8"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")

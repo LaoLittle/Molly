@@ -11,7 +11,7 @@ import org.laolittle.plugin.molly.MollyConfig.api_secret
 object Molly : KotlinPlugin(
     JvmPluginDescription(
         id = "org.laolittle.plugin.molly.Molly",
-        version = "1.0.7",
+        version = "1.0.8",
         name = "Molly"
     )
 ) {
