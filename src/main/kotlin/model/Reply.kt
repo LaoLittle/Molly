@@ -14,6 +14,7 @@ import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import org.laolittle.plugin.molly.MollyConfig.defaultReply
 import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
+import org.laolittle.plugin.molly.MollyConfig.name
 import org.laolittle.plugin.molly.MollyConfig.replyTimes
 import org.laolittle.plugin.molly.MollyConfig.timeoutReply
 import org.laolittle.plugin.molly.model.MollyApiService.inActMember
@@ -43,16 +44,16 @@ object Reply {
 
     suspend fun MessageEvent.reply(
         ctx: CoroutineScope,
-        mollyReplyTempo: Map<Int, MollyReply>,
+        mollyReplyTempo: List<MollyReply>,
         quoteReply: Boolean = false
     ) {
         conversation(ctx) {
             val receiver = subject as AudioSupported
-            for (i in mollyReplyTempo.keys)
-                when (mollyReplyTempo[i]?.typed) {
+            mollyReplyTempo.forEach { receive ->
+                when (receive.typed){
                     1 -> {
                         val send = buildMessageChain {
-                            add(mollyReplyTempo[i]?.content.toString())
+                            add(receive.content)
                         }
                         val random = (100..3000).random().toLong()
                         delay(random)
@@ -62,36 +63,38 @@ object Reply {
                     }
 
                     2 -> {
-                        val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
+                        val url = "https://files.molicloud.com/" + receive.content
                         getFile(url).use { subject.sendImage(it) }
                     }
 
                     4 -> {
-                        val url = "https://files.molicloud.com/" + mollyReplyTempo[i]?.content
+                        val url = "https://files.molicloud.com/" + receive.content
                         getFile(url).toExternalResource().use { receiver.uploadAudio(it).sendTo(subject) }
                     }
 
                     else -> {
-                        subject.sendMessage("https://files.molicloud.com/${mollyReplyTempo[i]?.content}")
+                        subject.sendMessage("https://files.molicloud.com/${receive.content}")
                     }
                 }
+            }
         }
-        mollyReply = mutableMapOf()
+        mollyReply = mutableListOf()
     }
 
     @ExperimentalSerializationApi
-    suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
+    suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope,msg: String) {
         conversation(ctx) {
             inActMember.add(sender.id)
+            val proMsg = msg.replace("@${bot.id}", name)
             runCatching {
-                if (msg == "") {
+                if (proMsg == "") {
                     subject.sendMessage(defaultReply.random())
                     if (replyTimes == 0) waitReply(ctx, 1)
                     for (i in 1..replyTimes) {
                         if (!waitReply(ctx, i)) break
                     }
                 } else {
-                    reply(ctx, msg)
+                    reply(ctx, proMsg)
                     for (i in 1..replyTimes)
                         if (!waitReply(ctx, i)) break
                 }
@@ -112,7 +115,7 @@ object Reply {
         conversation(ctx) {
             whileSelectMessages {
                 default {
-                    reply(ctx, it)
+                    reply(ctx, it.replace("@${bot.id}", name))
                     false
                 }
                 timeout(10_000) {
