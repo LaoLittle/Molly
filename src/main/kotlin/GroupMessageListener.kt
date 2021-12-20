@@ -49,7 +49,7 @@ object GroupMessageListener : Service() {
              */
             finding(Regex(name)) {
                 if (inActMember.contains(sender.id)) return@finding
-                groupLoopReply(this@GroupMessageListener, message.content.replace("@${bot.id}", ""))
+                groupLoopReply(this@GroupMessageListener, message.content)
             }
             atBot {
                 if (inActMember.contains(sender.id)) return@atBot

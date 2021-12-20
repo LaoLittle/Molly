@@ -15,7 +15,7 @@ import javax.net.ssl.*
 
 object MollyApiService {
 
-    var mollyReply: MutableMap<Int, MollyReply> = mutableMapOf()
+    var mollyReply: MutableList<MollyReply> = mutableListOf()
     var inActMember = mutableSetOf<Long>()
 
     @ExperimentalSerializationApi
@@ -64,8 +64,8 @@ object MollyApiService {
 
     @ExperimentalSerializationApi
     private fun decode(msgData: JsonArray) {
-        for ((i, json) in msgData.withIndex()) {
-            mollyReply[i] = Json.decodeFromJsonElement(json)
+        for (json in msgData) {
+            mollyReply.add(Json.decodeFromJsonElement(json))
         }
     }
 

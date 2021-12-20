@@ -1,5 +1,5 @@
 plugins {
-    val kotlinVersion = "1.6.0"
+    val kotlinVersion = "1.6.10"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.laolittle.plugin.molly"
-version = "1.0.8"
+version = "1.0.9"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
