@@ -7,10 +7,11 @@ import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.event.whileSelectMessages
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.message.data.sendTo
+import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import org.laolittle.plugin.molly.MollyConfig.defaultReply
 import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
@@ -50,7 +51,7 @@ object Reply {
         conversation(ctx) {
             val receiver = subject as AudioSupported
             mollyReplyTempo.forEach { receive ->
-                when (receive.typed){
+                when (receive.typed) {
                     1 -> {
                         val send = buildMessageChain {
                             add(receive.content)
@@ -82,7 +83,7 @@ object Reply {
     }
 
     @ExperimentalSerializationApi
-    suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope,msg: String) {
+    suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
         conversation(ctx) {
             inActMember.add(sender.id)
             val proMsg = msg.replace("@${bot.id}", name)
@@ -91,12 +92,12 @@ object Reply {
                     subject.sendMessage(defaultReply.random())
                     if (replyTimes == 0) waitReply(ctx, 1)
                     for (i in 1..replyTimes) {
-                        if (!waitReply(ctx, i)) break
+                        if (waitReply(ctx, i)) break
                     }
                 } else {
                     reply(ctx, proMsg)
                     for (i in 1..replyTimes)
-                        if (!waitReply(ctx, i)) break
+                        if (waitReply(ctx, i)) break
                 }
             }
             inActMember.remove(sender.id)
@@ -111,21 +112,29 @@ object Reply {
 
     @ExperimentalSerializationApi
     suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
-        var isTimeout = true
+        var isTimeout = false
         conversation(ctx) {
-            whileSelectMessages {
-                default {
-                    reply(ctx, it.replace("@${bot.id}", name))
-                    false
+            isTimeout = kotlin.runCatching {
+                reply(ctx, nextMessage(10_000).content.replace("@${bot.id}", name))
+                false
+            }.onFailure {
+                if ((i == 1) && (replyTimes > 0)) {
+                    subject.sendMessage(timeoutReply.random())
                 }
-                timeout(10_000) {
-                    if ((i == 1) && (replyTimes > 0)) {
-                        subject.sendMessage(timeoutReply.random())
-                    }
-                    isTimeout = false
-                    false
-                }
-            }
+            }.getOrDefault(true)
+            /*   whileSelectMessages {
+                   default {
+                       reply(ctx, it.replace("@${bot.id}", name))
+                       false
+                   }
+                   timeout(10_000) {
+                       if ((i == 1) && (replyTimes > 0)) {
+                           subject.sendMessage(timeoutReply.random())
+                       }
+                       isTimeout = false
+                       false
+                   }
+               } */
         }
         return isTimeout
     }
