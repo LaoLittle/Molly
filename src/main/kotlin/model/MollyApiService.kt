@@ -14,9 +14,7 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
 object MollyApiService {
-
-    var mollyReply: MutableList<MollyReply> = mutableListOf()
-    var inActMember = mutableSetOf<Long>()
+    val inActMember = mutableSetOf<Long>()
 
     @ExperimentalSerializationApi
     suspend fun request(
@@ -26,7 +24,7 @@ object MollyApiService {
         groupName: String?,
         groupId: Long?,
         inGroup: Boolean
-    ) {
+    ): MutableList<MollyReply> {
         val mollyUrl = "https://i.mly.app/reply"
 
         val jsonRequest = buildJsonObject {
@@ -42,13 +40,13 @@ object MollyApiService {
         val json = jsonRequest.toString().post(mollyUrl)
         if (MollyConfig.doPrintResultsOnConsole)
             Molly.logger.info { "服务器返回数据: $json" }
-        try {
+        return runCatching {
             val mollyData: MollyData = Json.decodeFromJsonElement(json)
             decode(mollyData.data)
-        } catch (e: Exception) {
+        }.onFailure {
             val mollyError: MollyError = Json.decodeFromJsonElement(json)
             hasError(mollyError)
-        }
+        }.getOrElse { throw Exception("解析错误! $json") }
     }
 
     @ExperimentalSerializationApi
@@ -63,10 +61,12 @@ object MollyApiService {
     }
 
     @ExperimentalSerializationApi
-    private fun decode(msgData: JsonArray) {
+    private fun decode(msgData: JsonArray): MutableList<MollyReply> {
+        val mollyReply = mutableListOf<MollyReply>()
         for (json in msgData) {
             mollyReply.add(Json.decodeFromJsonElement(json))
         }
+        return mollyReply
     }
 
     private fun useInsecureSSL() {

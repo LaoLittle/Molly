@@ -5,7 +5,6 @@ import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.subscribeFriendMessages
 import net.mamoe.mirai.message.data.content
 import org.laolittle.plugin.molly.MollyConfig.dontReply
-import org.laolittle.plugin.molly.model.MollyApiService.mollyReply
 import org.laolittle.plugin.molly.model.MollyApiService.request
 import org.laolittle.plugin.molly.model.Reply.reply
 
@@ -16,7 +15,7 @@ object FriendMessageListener : Service() {
             always {
                 if (subject.id == bot.id) return@always
                 dontReply.forEach { dontNode -> if (message.content.contains(Regex(dontNode))) return@always }
-                request(
+                val mollyReply = request(
                     message = it,
                     userId = sender.id,
                     userName = senderName,

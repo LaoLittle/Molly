@@ -19,7 +19,6 @@ import org.laolittle.plugin.molly.MollyConfig.name
 import org.laolittle.plugin.molly.MollyConfig.replyTimes
 import org.laolittle.plugin.molly.MollyConfig.timeoutReply
 import org.laolittle.plugin.molly.model.MollyApiService.inActMember
-import org.laolittle.plugin.molly.model.MollyApiService.mollyReply
 import org.laolittle.plugin.molly.model.MollyApiService.request
 import org.laolittle.plugin.molly.utils.KtorOkHttp.getFile
 import org.laolittle.plugin.molly.utils.conversation
@@ -31,7 +30,7 @@ object Reply {
     @ExperimentalSerializationApi
     suspend fun GroupMessageEvent.reply(ctx: CoroutineScope, msg: String) {
         conversation(ctx) {
-            request(
+            val mollyReply = request(
                 message = msg,
                 userId = sender.id,
                 userName = senderName,
@@ -79,7 +78,6 @@ object Reply {
                 }
             }
         }
-        mollyReply = mutableListOf()
     }
 
     @ExperimentalSerializationApi
