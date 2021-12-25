@@ -31,11 +31,14 @@ object MollyConfig : AutoSavePluginConfig("MollyConfig") {
         支持正则
     """
     )
-    val dontReply: Set<String> by value(setOf("/help", "色图"))
+    val dontReply: Set<String> by value(setOf("/", "色图"))
 
     @ValueDescription("机器人被呼叫但是消息没有任何内容的回应")
     val defaultReply: Set<String> by value(setOf("？", "怎么", "怎么了", "什么？", "在", "嗯？"))
 
     @ValueDescription("机器人被呼叫，消息没有任何内容且发送人一直没有说话的回应")
     val timeoutReply: Set<String> by value(setOf("没事我就溜了", "emmmmm", "......", "溜了", "？"))
+
+    @ValueDescription("是否开启私聊")
+    val enablePrivateChatReply: Boolean by value(true)
 }

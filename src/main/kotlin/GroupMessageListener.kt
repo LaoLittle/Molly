@@ -13,6 +13,17 @@ object GroupMessageListener : Service() {
     override suspend fun main() {
 
         GlobalEventChannel.subscribeGroupMessages {
+            finding(Regex(name)) {
+                if (inActMember.contains(sender.id)) return@finding
+                groupLoopReply(this@GroupMessageListener, message.content)
+            }
+            atBot {
+                if (inActMember.contains(sender.id)) return@atBot
+                val msg = it
+                    .replace("@${bot.id}", "")
+                    .replace(" ", "")
+                groupLoopReply(this@GroupMessageListener, msg)
+            }
             /*"mollydebug" {
                 subject.sendMessage("start")
                 whileSelectMessages {
@@ -47,17 +58,6 @@ object GroupMessageListener : Service() {
             }
 
              */
-            finding(Regex(name)) {
-                if (inActMember.contains(sender.id)) return@finding
-                groupLoopReply(this@GroupMessageListener, message.content)
-            }
-            atBot {
-                if (inActMember.contains(sender.id)) return@atBot
-                val msg = it
-                    .replace("@${bot.id}", "")
-                    .replace(" ", "")
-                groupLoopReply(this@GroupMessageListener, msg)
-            }
         }
     }
 }

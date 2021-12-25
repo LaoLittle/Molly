@@ -48,7 +48,6 @@ object Reply {
         quoteReply: Boolean = false
     ) {
         conversation(ctx) {
-            val receiver = subject as AudioSupported
             mollyReplyTempo.forEach { receive ->
                 when (receive.typed) {
                     1 -> {
@@ -68,8 +67,9 @@ object Reply {
                     }
 
                     4 -> {
+                        val receiver = subject as AudioSupported
                         val url = "https://files.molicloud.com/" + receive.content
-                        getFile(url).toExternalResource().use { receiver.uploadAudio(it).sendTo(subject) }
+                        getFile(url).use { input -> input.toExternalResource().use { receiver.uploadAudio(it).sendTo(subject) } }
                     }
 
                     else -> {
