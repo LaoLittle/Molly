@@ -1,10 +1,7 @@
 package org.laolittle.plugin.molly.model
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.put
+import kotlinx.serialization.json.*
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import org.laolittle.plugin.molly.Molly
@@ -24,7 +21,7 @@ object MollyApiService {
         groupName: String?,
         groupId: Long?,
         inGroup: Boolean
-    ): MutableList<MollyReply> {
+    ): List<MollyReply> {
         val mollyUrl = "https://i.mly.app/reply"
 
         val jsonRequest = buildJsonObject {
@@ -46,6 +43,14 @@ object MollyApiService {
         }.onFailure {
             val mollyError: MollyError = Json.decodeFromJsonElement(json)
             hasError(mollyError)
+            if (mollyError.code == "C1001") return decode(buildJsonArray {
+                    addJsonObject {
+                        val nullStr: String? = null
+                        put("content", mollyError.message)
+                        put("typed", 5)
+                        put("remark", nullStr)
+                    }
+                })
         }.getOrElse { throw Exception("解析错误! $json") }
     }
 
@@ -61,7 +66,7 @@ object MollyApiService {
     }
 
     @ExperimentalSerializationApi
-    private fun decode(msgData: JsonArray): MutableList<MollyReply> {
+    private fun decode(msgData: JsonArray): List<MollyReply> {
         val mollyReply = mutableListOf<MollyReply>()
         for (json in msgData) {
             mollyReply.add(Json.decodeFromJsonElement(json))

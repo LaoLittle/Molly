@@ -12,7 +12,7 @@ import org.laolittle.plugin.molly.model.Reply.reply
 @ExperimentalSerializationApi
 object FriendMessageListener : Service() {
     override suspend fun main() {
-        GlobalEventChannel.filter { enablePrivateChatReply }.subscribeFriendMessages {
+        GlobalEventChannel.parentScope(Molly).context(Molly.coroutineContext).filter { enablePrivateChatReply }.subscribeFriendMessages {
             always {
                 if (subject.id == bot.id) return@always
                 dontReply.forEach { dontNode -> if (message.content.contains(Regex(dontNode))) return@always }

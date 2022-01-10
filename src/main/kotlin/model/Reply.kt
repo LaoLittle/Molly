@@ -72,6 +72,18 @@ object Reply {
                         getFile(url).use { input -> input.toExternalResource().use { receiver.uploadAudio(it).sendTo(subject) } }
                     }
 
+                    5-> {
+                        val send = buildMessageChain {
+                            add(receive.content)
+                        }
+                        val random = (100..3000).random().toLong()
+                        delay(random)
+                        if (quoteReply)
+                            subject.sendMessage(send.plus(message.quote()))
+                        else subject.sendMessage(send)
+                        throw IllegalAccessException("回复次数超限")
+                    }
+
                     else -> {
                         subject.sendMessage("https://files.molicloud.com/${receive.content}")
                     }
@@ -88,13 +100,15 @@ object Reply {
             runCatching {
                 if (proMsg == "") {
                     subject.sendMessage(defaultReply.random())
-                    if (replyTimes == 0) waitReply(ctx, 1)
-                    for (i in 1..replyTimes) {
+                    if (replyTimes == 0) waitReply(ctx, 1) else waitReply(ctx, 0)
+                    for (i in 1 until replyTimes) {
                         if (waitReply(ctx, i)) break
                     }
                 } else {
                     reply(ctx, proMsg)
-                    for (i in 1..replyTimes)
+                    if (proMsg == name) waitReply(ctx, 0)
+                    else waitReply(ctx, 1)
+                    for (i in 1 until replyTimes)
                         if (waitReply(ctx, i)) break
                 }
             }
@@ -112,11 +126,11 @@ object Reply {
     suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
         var isTimeout = false
         conversation(ctx) {
-            isTimeout = kotlin.runCatching {
+            isTimeout = runCatching {
                 reply(ctx, nextMessage(10_000).content.replace("@${bot.id}", name))
                 false
             }.onFailure {
-                if ((i == 1) && (replyTimes > 0)) {
+                if ((i == 0) && (replyTimes > 0)) {
                     subject.sendMessage(timeoutReply.random())
                 }
             }.getOrDefault(true)

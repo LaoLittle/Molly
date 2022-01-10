@@ -2,6 +2,7 @@ package org.laolittle.plugin.molly
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.message.data.content
 import org.laolittle.plugin.molly.MollyConfig.name
@@ -12,13 +13,11 @@ import org.laolittle.plugin.molly.model.Reply.groupLoopReply
 object GroupMessageListener : Service() {
     override suspend fun main() {
 
-        GlobalEventChannel.subscribeGroupMessages {
+        GlobalEventChannel.parentScope(Molly).context(Molly.coroutineContext).filterIsInstance<GroupMessageEvent>().filter { it.sender.id !in inActMember }.subscribeGroupMessages {
             finding(Regex(name)) {
-                if (inActMember.contains(sender.id)) return@finding
                 groupLoopReply(this@GroupMessageListener, message.content)
             }
             atBot {
-                if (inActMember.contains(sender.id)) return@atBot
                 val msg = it
                     .replace("@${bot.id}", "")
                     .replace(" ", "")
