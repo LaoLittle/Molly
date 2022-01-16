@@ -15,7 +15,7 @@ object GroupMessageListener : Service() {
 
         GlobalEventChannel.parentScope(Molly).context(Molly.coroutineContext).filterIsInstance<GroupMessageEvent>().filter { it.sender.id !in inActMember }.subscribeGroupMessages {
             finding(Regex(name)) {
-                groupLoopReply(this@GroupMessageListener, message.content)
+                groupLoopReply(this@GroupMessageListener, message.content.replace(" ", ""))
             }
             atBot {
                 val msg = it

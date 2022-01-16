@@ -127,7 +127,7 @@ object Reply {
         var isTimeout = false
         conversation(ctx) {
             isTimeout = runCatching {
-                reply(ctx, nextMessage(10_000).content.replace("@${bot.id}", name))
+                reply(ctx, nextMessage(10_000).content.replace("@${bot.id}", name).replace(" ", ""))
                 false
             }.onFailure {
                 if ((i == 0) && (replyTimes > 0)) {
