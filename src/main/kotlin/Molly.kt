@@ -17,6 +17,7 @@ object Molly : KotlinPlugin(
 ) {
     override fun onEnable() {
         MollyConfig.reload()
+        MollyData.reload()
         logger.info { "茉莉云机器人加载完毕" }
         if (api_key == "" || api_secret == "")
             logger.info { "请修改配置文件添加ApiKey和ApiSecret，配置文件位于./config/Molly/MollyConfig.yml" }

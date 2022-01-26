@@ -17,8 +17,7 @@ object KtorOkHttp {
     }
 
     suspend fun String.post(url: String): JsonElement {
-        val responseData = client.post<String> {
-            url(url)
+        val responseData = client.post<String>(url) {
             body = this@post
             header("Content-Type", "application/json;charset=utf-8")
             header("Api-Key", api_key)

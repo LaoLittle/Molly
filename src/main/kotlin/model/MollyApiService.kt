@@ -6,6 +6,8 @@ import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import org.laolittle.plugin.molly.Molly
 import org.laolittle.plugin.molly.MollyConfig
+import org.laolittle.plugin.molly.MollyConfig.UnknownReply.*
+import org.laolittle.plugin.molly.MollyData.customUnknownReply
 import org.laolittle.plugin.molly.utils.KtorOkHttp.post
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
@@ -39,11 +41,28 @@ object MollyApiService {
             Molly.logger.info { "服务器返回数据: $json" }
         return runCatching {
             val mollyData: MollyData = Json.decodeFromJsonElement(json)
-            decode(mollyData.data)
+            val replyData = if (mollyData.plugin == null) {
+                when (MollyConfig.unknownReplyBehavior) {
+                    DEFAULT -> mollyData
+                    LOCAL -> {
+                        mollyData.copy(data = buildJsonArray {
+                            addJsonObject {
+                                val nullStr: String? = null
+                                put("content", customUnknownReply.random())
+                                put("typed", 1)
+                                put("remark", nullStr)
+                            }
+                        })
+                    }
+                    OFF -> mollyData.copy(data = buildJsonArray { })
+                }
+            } else mollyData
+            decode(replyData.data)
         }.onFailure {
             val mollyError: MollyError = Json.decodeFromJsonElement(json)
             hasError(mollyError)
-            if (mollyError.code == "C1001") return decode(buildJsonArray {
+            when (mollyError.code) {
+                "C1001" -> return decode(buildJsonArray {
                     addJsonObject {
                         val nullStr: String? = null
                         put("content", mollyError.message)
@@ -51,6 +70,7 @@ object MollyApiService {
                         put("remark", nullStr)
                     }
                 })
+            }
         }.getOrElse { throw Exception("解析错误! $json") }
     }
 
