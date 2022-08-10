@@ -7,6 +7,7 @@ import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.data.MessageChainBuilder
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
@@ -49,45 +50,51 @@ object Reply {
     ) {
         conversation(ctx) {
             mollyReplyTempo.forEach { receive ->
+                val send = MessageChainBuilder()
                 when (receive.typed) {
                     1 -> {
-                        val send = buildMessageChain {
-                            add(receive.content)
-                        }
+                        send.add(receive.content)
+
                         val random = (100..3000).random().toLong()
                         delay(random)
-                        if (quoteReply)
-                            subject.sendMessage(send.plus(message.quote()))
-                        else subject.sendMessage(send)
                     }
 
                     2 -> {
                         val url = "https://files.molicloud.com/" + receive.content
-                        getFile(url).use { subject.sendImage(it) }
+
+                        getFile(url).use {
+                            it.toExternalResource().use { ex ->
+                                send.add(subject.uploadImage(ex))
+                            }
+                        }
                     }
 
                     4 -> {
                         val receiver = subject as AudioSupported
                         val url = "https://files.molicloud.com/" + receive.content
-                        getFile(url).use { input -> input.toExternalResource().use { receiver.uploadAudio(it).sendTo(subject) } }
+                        getFile(url).use {
+                            it.toExternalResource().use { ex ->
+                                send.add(receiver.uploadAudio(ex))
+                            }
+                        }
                     }
 
                     5-> {
-                        val send = buildMessageChain {
-                            add(receive.content)
-                        }
+                        send.add(receive.content)
+
                         val random = (100..3000).random().toLong()
                         delay(random)
-                        if (quoteReply)
-                            subject.sendMessage(send.plus(message.quote()))
-                        else subject.sendMessage(send)
                         throw IllegalAccessException("回复次数超限")
                     }
 
                     else -> {
-                        subject.sendMessage("https://files.molicloud.com/${receive.content}")
+                        send.add("https://files.molicloud.com/${receive.content}")
                     }
                 }
+
+                if (quoteReply) send.add(message.quote())
+
+                subject.sendMessage(send.build())
             }
         }
     }

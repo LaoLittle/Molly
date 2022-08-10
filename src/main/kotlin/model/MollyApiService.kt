@@ -24,7 +24,7 @@ object MollyApiService {
         groupId: Long?,
         inGroup: Boolean
     ): List<MollyReply> {
-        val mollyUrl = "https://i.mly.app/reply"
+        val mollyUrl = "https://api.mlyai.com/reply"
 
         val jsonRequest = buildJsonObject {
             put("content", message)

@@ -1,13 +1,13 @@
 plugins {
-    val kotlinVersion = "1.6.10"
+    val kotlinVersion = "1.7.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
-    id("net.mamoe.mirai-console") version "2.10.0-RC2"
+    id("net.mamoe.mirai-console") version "2.12.0"
 }
 
 group = "org.laolittle.plugin.molly"
-version = "1.2.0"
+version = "1.3.0"
 
 repositories {
     maven("https://maven.aliyun.com/repository/central")
