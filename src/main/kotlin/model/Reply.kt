@@ -2,18 +2,18 @@ package org.laolittle.plugin.molly.model
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.ExperimentalSerializationApi
 import net.mamoe.mirai.contact.AudioSupported
-import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.event.globalEventChannel
+import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.message.data.MessageChainBuilder
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
-import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import org.laolittle.plugin.molly.Molly
 import org.laolittle.plugin.molly.MollyConfig.defaultReply
 import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
 import org.laolittle.plugin.molly.MollyConfig.name
@@ -134,7 +134,12 @@ object Reply {
         var isTimeout = false
         conversation(ctx) {
             isTimeout = runCatching {
-                reply(ctx, nextMessage(10_000).content.replace("@${bot.id}", name).replace(" ", ""))
+                val next = withTimeout(10_000) {
+                    Molly.globalEventChannel().nextEvent<GroupMessageEvent> {
+                        true
+                    }
+                }
+                next.reply(ctx, next.message.content.replace("@${bot.id}", name).replace(" ", ""))
                 false
             }.onFailure {
                 if ((i == 0) && (replyTimes > 0)) {
