@@ -12,21 +12,22 @@ import org.laolittle.plugin.molly.model.Reply.reply
 @ExperimentalSerializationApi
 object FriendMessageListener : Service() {
     override suspend fun main() {
-        GlobalEventChannel.parentScope(Molly).context(Molly.coroutineContext).filter { enablePrivateChatReply }.subscribeFriendMessages {
-            always {
-                if (subject.id == bot.id) return@always
-                dontReply.forEach { dontNode -> if (message.content.contains(Regex(dontNode))) return@always }
-                val mollyReply = request(
-                    message = it,
-                    userId = sender.id,
-                    userName = senderName,
-                    groupName = null,
-                    groupId = null,
-                    false
-                )
-                reply(this@FriendMessageListener, mollyReply)
+        GlobalEventChannel.parentScope(Molly).context(Molly.coroutineContext).filter { enablePrivateChatReply }
+            .subscribeFriendMessages {
+                always {
+                    if (subject.id == bot.id) return@always
+                    dontReply.forEach { dontNode -> if (message.content.contains(Regex(dontNode))) return@always }
+                    val mollyReply = request(
+                        message = it,
+                        userId = sender.id,
+                        userName = senderName,
+                        groupName = null,
+                        groupId = null,
+                        false
+                    )
+                    reply(this@FriendMessageListener, mollyReply)
+                }
             }
-        }
         /*     finding(Regex("聊天")) {
                  subject.sendMessage("在呢")
                  var loop = true

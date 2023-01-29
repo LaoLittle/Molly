@@ -19,7 +19,8 @@ import org.laolittle.plugin.molly.MollyConfig.doQuoteReply
 import org.laolittle.plugin.molly.MollyConfig.name
 import org.laolittle.plugin.molly.MollyConfig.replyTimes
 import org.laolittle.plugin.molly.MollyConfig.timeoutReply
-import org.laolittle.plugin.molly.model.MollyApiService.inActMember
+import org.laolittle.plugin.molly.model.MollyApiService.addMember
+import org.laolittle.plugin.molly.model.MollyApiService.removeMember
 import org.laolittle.plugin.molly.model.MollyApiService.request
 import org.laolittle.plugin.molly.utils.KtorOkHttp.getFile
 import org.laolittle.plugin.molly.utils.conversation
@@ -79,7 +80,7 @@ object Reply {
                         }
                     }
 
-                    5-> {
+                    5 -> {
                         send.add(receive.content)
 
                         val random = (100..3000).random().toLong()
@@ -102,7 +103,7 @@ object Reply {
     @ExperimentalSerializationApi
     suspend fun GroupMessageEvent.groupLoopReply(ctx: CoroutineScope, msg: String) {
         conversation(ctx) {
-            inActMember.add(sender.id)
+            addMember(sender.id)
             val proMsg = msg.replace("@${bot.id}", name)
             runCatching {
                 if (proMsg == "") {
@@ -119,7 +120,7 @@ object Reply {
                         if (waitReply(ctx, i)) break
                 }
             }
-            inActMember.remove(sender.id)
+            removeMember(sender.id)
         }
     }
 
@@ -128,15 +129,17 @@ object Reply {
      *
      * @return 是否超时
      * */
-
     @ExperimentalSerializationApi
     suspend fun GroupMessageEvent.waitReply(ctx: CoroutineScope, i: Int): Boolean {
+        val groupId = group.id
+        val senderId = sender.id
+
         var isTimeout = false
         conversation(ctx) {
             isTimeout = runCatching {
                 val next = withTimeout(10_000) {
                     Molly.globalEventChannel().nextEvent<GroupMessageEvent> {
-                        true
+                        group.id == groupId && sender.id == senderId
                     }
                 }
                 next.reply(ctx, next.message.content.replace("@${bot.id}", name).replace(" ", ""))

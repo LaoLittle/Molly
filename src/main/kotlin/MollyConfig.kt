@@ -42,15 +42,17 @@ object MollyConfig : AutoSavePluginConfig("MollyConfig") {
     @ValueDescription("是否开启私聊")
     val enablePrivateChatReply by value(true)
 
-    @ValueDescription("""
+    @ValueDescription(
+        """
         万金油回复模式设定
         DEFAULT: 使用茉莉云官方的万金油
         LOCAL: 使用本地的万金油
         OFF: 不开启万金油回复
-    """)
+    """
+    )
     val unknownReplyBehavior by value(UnknownReply.DEFAULT)
 
-    enum class UnknownReply{
+    enum class UnknownReply {
         DEFAULT,
         LOCAL,
         OFF

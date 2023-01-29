@@ -11,14 +11,14 @@ import org.laolittle.plugin.molly.MollyConfig.api_secret
 object Molly : KotlinPlugin(
     JvmPluginDescription(
         id = "org.laolittle.plugin.molly.Molly",
-        version = "1.3.0",
+        version = "1.4.0",
         name = "Molly"
     )
 ) {
     override fun onEnable() {
         MollyConfig.reload()
         MollyData.reload()
-        logger.info { "茉莉云机器人加载完毕" }
+        logger.info { "茉莉云插件加载完毕" }
         if (api_key == "" || api_secret == "")
             logger.info { "请修改配置文件添加ApiKey和ApiSecret，配置文件位于./config/Molly/MollyConfig.yml" }
         else {

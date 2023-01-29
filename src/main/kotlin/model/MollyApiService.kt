@@ -10,10 +10,23 @@ import org.laolittle.plugin.molly.MollyConfig.UnknownReply.*
 import org.laolittle.plugin.molly.MollyData.customUnknownReply
 import org.laolittle.plugin.molly.utils.KtorOkHttp.post
 import java.security.cert.X509Certificate
+import java.util.concurrent.ConcurrentHashMap
 import javax.net.ssl.*
 
 object MollyApiService {
-    val inActMember = mutableSetOf<Long>()
+    val inActMember = ConcurrentHashMap<Long, Unit>()
+
+    fun addMember(id: Long): Boolean {
+        return inActMember.put(id, Unit) == null
+    }
+
+    fun removeMember(id: Long): Boolean {
+        return inActMember.remove(id) != null
+    }
+
+    fun containsMember(id: Long): Boolean {
+        return inActMember.contains(id)
+    }
 
     @ExperimentalSerializationApi
     suspend fun request(
@@ -54,6 +67,7 @@ object MollyApiService {
                             }
                         })
                     }
+
                     OFF -> mollyData.copy(data = buildJsonArray { })
                 }
             } else mollyData
